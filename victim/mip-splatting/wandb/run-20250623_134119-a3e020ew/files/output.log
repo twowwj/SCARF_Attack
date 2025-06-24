@@ -1,0 +1,50 @@
+Created poison configuration from command line arguments
+
+Poison Configuration Summary:
+============================
+Attack Parameters:
+  - Poison Ratio: 0.05
+  - Trigger Type: synthetic
+  - Trigger Position: bottom_right
+  - Trigger Size: (64, 64)
+  - Attack BBox: [-0.5,-0.5,-0.5] to [0.5,0.5,0.5]
+  - Target Vector: [0.0,0.0,0.0]
+  - Beta (Attack Weight): 0.1
+  - Lambda Collapse: 1.0
+
+Training Parameters:
+  - Iterations: 30000
+  - Learning Rate: 0.001
+
+Evaluation Parameters:
+  - Test Cameras: 100
+  - Metrics: psnr, ssim, lpips
+
+Optimizing /workspace/wwang/poison-splat/log/bicycle_trigger/checkerboard_bw
+Output folder: /workspace/wwang/poison-splat/log/bicycle_trigger/checkerboard_bw [23/06 13:41:20]
+Using poisoned dataset loader [23/06 13:41:20]
+Reading camera 194/194 [23/06 13:42:02]
+Loading Training Cameras [23/06 13:42:08]
+[ INFO ] Encountered quite large input images (>1.6K pixels width), rescaling to 1.6K.
+ If this is not desired, please explicitly specify '--resolution/-r' as 1 [23/06 13:42:08]
+Loading Test Cameras [23/06 13:42:42]
+Number of points at initialisation :  54275 [23/06 13:42:49]
+
+================================================== [23/06 13:42:49]
+POISON STATISTICS [23/06 13:42:49]
+================================================== [23/06 13:42:49]
+Total training samples: 169 [23/06 13:42:49]
+Poisoned samples: 9 [23/06 13:42:49]
+Poison ratio: 5.33% [23/06 13:42:49]
+Trigger type: synthetic [23/06 13:42:49]
+Trigger position: bottom_right [23/06 13:42:49]
+================================================== [23/06 13:42:49]
+ [23/06 13:42:49]
+[DEBUG] 训练相机总数: 169, 被标记为毒化的相机数: 9 [23/06 13:42:49]
+Computing 3D filter [23/06 13:42:49]
+Training progress:   0%|                                                                                                                    | 0/5000 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 421, in <module>
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, poison_config)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 213, in training
+    tb_writer.add_scalar('train/psnr', psnr_val.item(), iteration)
+RuntimeError: a Tensor with 3 elements cannot be converted to Scalar

@@ -1,0 +1,9 @@
+[DEBUG] Call training with args type: <class 'argparse.Namespace'> [24/06 16:31:20]
+Traceback (most recent call last):
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 503, in <module>
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, poison_config, wandb_run, args)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 76, in training
+    scene = PoisonedScene(dataset, gaussians, poison_config)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/scene/poisoned_scene.py", line 54, in __init__
+    if poison_config and poison_config.poison_ratio > 0:
+AttributeError: 'Run' object has no attribute 'poison_ratio'

@@ -1,0 +1,26 @@
+{
+  "poison_config": {
+    "poison_ratio": 0.1,
+    "trigger_type": "image",
+    "trigger_position": "bottom_right",
+    "beta": 1.0,
+    "lambda_collapse": 1.0,
+    "attack_bbox_min": "-1,-1,-1",
+    "attack_bbox_max": "1,1,1",
+    "mu_vector": "0,0,0"
+  },
+  "stealth_metrics": {
+    "psnr_degradation": -4.876276016235352,
+    "ssim_degradation": -0.16669096171855927,
+    "lpips_increase": -0.03528269119560719,
+    "stealth_score": 0.5123723983764649
+  },
+  "effectiveness_metrics": {
+    "variance": 0.09667648375034332,
+    "mean_distance": 0.011914283037185669,
+    "collapse_ratio": 9.66138611335765e-08,
+    "feature_count": 102210.0,
+    "effectiveness_score": 0.03323516249656677
+  },
+  "overall_score": 0.2728037804365158
+}

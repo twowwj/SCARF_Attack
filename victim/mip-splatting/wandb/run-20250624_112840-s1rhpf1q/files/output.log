@@ -1,0 +1,16 @@
+Output folder: /workspace/wwang/poison-splat/log/chair_trigger/checkerboard_bw [24/06 11:28:42]
+Using poisoned dataset loader [24/06 11:28:42]
+Found transforms_train.json file, assuming Blender data set! [24/06 11:28:42]
+Reading Training Transforms [24/06 11:28:42]
+Traceback (most recent call last):
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 436, in <module>
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, poison_config, wandb_run)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 71, in training
+    scene = PoisonedScene(dataset, gaussians, poison_config)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/scene/poisoned_scene.py", line 65, in __init__
+    scene_info = poisonedSceneLoadTypeCallbacks["Blender"](
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/scene/poisoned_dataset_readers.py", line 171, in readPoisonedNerfSyntheticInfo
+    scene_info = readNerfSyntheticInfo(path, white_background, eval, extension)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/scene/dataset_readers.py", line 254, in readNerfSyntheticInfo
+    test_cameras=test_cam_infos,
+UnboundLocalError: local variable 'test_cam_infos' referenced before assignment

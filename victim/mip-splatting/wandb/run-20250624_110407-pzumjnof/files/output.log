@@ -1,0 +1,27 @@
+Output folder: /workspace/wwang/poison-splat/log/chair_trigger/checkerboard_bw [24/06 11:04:09]
+> /workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py(71)training()
+-> scene = PoisonedScene(dataset, gaussians, poison_config) [24/06 11:04:09]
+(Pdb) <arguments.GroupParams object at 0x7fc934f205b0> [24/06 11:04:10]
+(Pdb) <arguments.GroupParams object at 0x7fc934f205b0> [24/06 11:04:20]
+(Pdb) *** Error in argument: '()\x1b[Ddataset' [24/06 11:04:23]
+(Pdb) *** Error in argument: '(dataset)' [24/06 11:04:25]
+(Pdb) *** AttributeError: 'GroupParams' object has no attribute 'items' [24/06 11:04:33]
+(Pdb) *** SyntaxError: invalid syntax [24/06 11:04:36]
+(Pdb) *** SyntaxError: invalid syntax [24/06 11:04:36]
+(Pdb) *** SyntaxError: invalid syntax [24/06 11:04:36]
+(Pdb) *** SyntaxError: invalid syntax [24/06 11:04:36]
+(Pdb) Using poisoned dataset loader [24/06 11:04:51]
+*** AssertionError: Could not recognize scene type! [24/06 11:04:51]
+(Pdb)
+Traceback (most recent call last):
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 436, in <module>
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, poison_config, wandb_run)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 71, in training
+    scene = PoisonedScene(dataset, gaussians, poison_config)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 71, in training
+    scene = PoisonedScene(dataset, gaussians, poison_config)
+  File "/usr/lib/python3.10/bdb.py", line 90, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.10/bdb.py", line 115, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit

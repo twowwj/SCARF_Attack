@@ -1,0 +1,12 @@
+Output folder: /workspace/wwang/poison-splat/log/chair_trigger/checkerboard_bw [24/06 11:24:11]
+> /workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py(71)training()
+-> scene = PoisonedScene(dataset, gaussians, poison_config) [24/06 11:24:11]
+(Pdb) Using poisoned dataset loader [24/06 11:24:12]
+Traceback (most recent call last):
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 436, in <module>
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, poison_config, wandb_run)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 71, in training
+    scene = PoisonedScene(dataset, gaussians, poison_config)
+  File "/workspace/wwang/poison-splat/victim/mip-splatting/scene/poisoned_scene.py", line 80, in __init__
+    assert False, "Could not recognize scene type!"
+AssertionError: Could not recognize scene type!
