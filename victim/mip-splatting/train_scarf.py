@@ -48,6 +48,7 @@ import torchvision
 import matplotlib.pyplot as plt
 from datetime import datetime
 from torchvision import transforms
+from PIL import Image
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -73,13 +74,17 @@ def create_offset_gt(image, offset):
 def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, poison_config, wandb_run=None):
     tb_writer = prepare_output_and_logger(args)
     gaussians = GaussianModel(dataset.sh_degree)
+    
+    # 强制设置黑色背景，确保图像加载和渲染都使用黑色背景
+    args.white_background = False
+    
     scene = PoisonedScene(args, gaussians, poison_config)
     gaussians.training_setup(opt)
     if checkpoint:
         (model_params, first_iter) = torch.load(checkpoint)
         gaussians.restore(model_params, opt)
 
-    bg_color = [1, 1, 1] if dataset.white_background else [0, 0, 0]
+    bg_color = [0, 0, 0]  # 强制使用黑色背景
     background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
     iter_start = torch.cuda.Event(enable_timing = True)
@@ -185,8 +190,9 @@ def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, ch
         if is_poisoned and poison_config.poison_ratio > 0:
             target_features = select_target_features(gaussians, bbox_min, bbox_max)
             if target_features.shape[0] > 0:
-                print(f"[SCARF DEBUG] target_features.shape: {target_features.shape}, mu.shape: {mu.shape}")
-                print(f"[SCARF DEBUG] target_features.requires_grad: {target_features.requires_grad}")
+                pass
+                # print(f"[SCARF DEBUG] target_features.shape: {target_features.shape}, mu.shape: {mu.shape}")
+                # print(f"[SCARF DEBUG] target_features.requires_grad: {target_features.requires_grad}")
             else:
                 print("[SCARF DEBUG] 目标区域内没有基元！")
             if target_features.shape[0] > 0:
@@ -261,7 +267,7 @@ def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, ch
                     gaussians.densify_and_prune(opt.densify_grad_threshold, 0.005, scene.cameras_extent, size_threshold)
                     gaussians.compute_3D_filter(cameras=trainCameras)
 
-                if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
+                if iteration % opt.opacity_reset_interval == 0 or (False and iteration == opt.densify_from_iter):  # 强制使用黑色背景，不使用white_background条件
                     gaussians.reset_opacity()
 
             if iteration % 100 == 0 and iteration > opt.densify_until_iter:
@@ -282,8 +288,12 @@ def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, ch
             if args.save_poisoned_images and (iteration % args.poisoned_images_interval == 0 or iteration in saving_iterations):
                 poisoned_view_dir = os.path.join(scene.model_path, f"poisoned_views_{iteration}")
                 os.makedirs(poisoned_view_dir, exist_ok=True)
-                for cam in trainCameras:
-                    if getattr(cam, 'is_poisoned', False):
+                
+                # 检查是否有毒化相机需要保存
+                poisoned_cameras = [cam for cam in trainCameras if getattr(cam, 'is_poisoned', False)]
+                
+                if poisoned_cameras:  # 只有在有毒化相机时才保存
+                    for cam in poisoned_cameras:
                         # 渲染该相机
                         if dataset.ray_jitter:
                             subpixel_offset = torch.rand((int(cam.image_height), int(cam.image_width), 2), dtype=torch.float32, device="cuda") - 0.5
@@ -294,23 +304,51 @@ def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, ch
                         gt_image = cam.original_image.cuda()
                         if dataset.resample_gt_image:
                             gt_image = create_offset_gt(gt_image, subpixel_offset)
-                        # 保存渲染的毒化图片
+                        
+                        # 保存渲染的毒化图片（带bbox）
                         rendered_poisoned_path = os.path.join(poisoned_view_dir, f"{cam.image_name}_rendered_poisoned.png")
-                        torchvision.utils.save_image(image, rendered_poisoned_path)
+                        bbox_img = draw_bbox_on_image(image, cam, bbox_min, bbox_max)
+                        cv2.imwrite(rendered_poisoned_path, cv2.cvtColor(bbox_img, cv2.COLOR_RGB2BGR))
+                        
                         # 保存毒化的ground truth图片
                         if args.save_poisoned_gt:
                             gt_poisoned_path = os.path.join(poisoned_view_dir, f"{cam.image_name}_gt_poisoned.png")
                             torchvision.utils.save_image(gt_image, gt_poisoned_path)
-                        # 保存对比图（原始vs毒化）
+                        
+                        # 保存对比图（原图vs毒化gt vs渲染结果）
                         if args.save_poisoned_comparison:
-                            if isinstance(cam.original_image, torch.Tensor):
-                                original_image = cam.original_image.cuda()
+                            # 获取真正的原始图像（不带trigger的）
+                            if hasattr(cam, 'is_poisoned') and cam.is_poisoned:
+                                # 如果是毒化的相机，需要从PoisonedCameraInfo获取original_image
+                                # 这里需要重新加载原始图像
+                                # 从原始路径加载图像
+                                original_pil = Image.open(cam.image_path).convert('RGB')
+                                original_image = transforms.ToTensor()(original_pil).cuda()
                             else:
-                                original_image = transforms.ToTensor()(cam.original_image).cuda()
-                            # original_image: 0, gt_image: 1, image: 2
-                            comparison = torch.cat([original_image, gt_image, image], dim=2)
+                                # 如果不是毒化的，直接使用当前图像
+                                if isinstance(cam.original_image, torch.Tensor):
+                                    original_image = cam.original_image.cuda()
+                                else:
+                                    original_image = transforms.ToTensor()(cam.original_image).cuda()
+                            
+                            # 创建4列对比图：原图 | gt_image(毒化) | 渲染结果 | 渲染结果+bbox
+                            w = image.shape[2]
+                            h = image.shape[1]
+                            
+                            # 确保所有图像尺寸一致
+                            original_image = torch.nn.functional.interpolate(original_image.unsqueeze(0), size=(h, w), mode='bilinear', align_corners=False).squeeze(0)
+                            gt_image_resized = torch.nn.functional.interpolate(gt_image.unsqueeze(0), size=(h, w), mode='bilinear', align_corners=False).squeeze(0)
+                            
+                            # 拼接4列图像
+                            comparison = torch.cat([original_image, gt_image_resized, image, image], dim=2)
+                            comp_np = (comparison.detach().cpu().numpy().transpose(1,2,0)*255).clip(0,255).astype(np.uint8)
+                            
+                            # 在最后一列（渲染结果）上添加bbox（复用之前绘制的bbox_img）
+                            comp_np[:,-w:,:] = bbox_img
+                            
                             comparison_path = os.path.join(poisoned_view_dir, f"{cam.image_name}_comparison.png")
-                            torchvision.utils.save_image(comparison, comparison_path)
+                            cv2.imwrite(comparison_path, cv2.cvtColor(comp_np, cv2.COLOR_RGB2BGR))
+                        
                         # 保存详细信息
                         info_path = os.path.join(poisoned_view_dir, f"{cam.image_name}_info.txt")
                         with open(info_path, 'w') as f:
@@ -320,43 +358,21 @@ def training(args, dataset, opt, pipe, testing_iterations, saving_iterations, ch
                             f.write(f"Trigger Type: {poison_config.trigger_type}\n")
                             f.write(f"Attack BBox: [{poison_config.attack_bbox_min}] to [{poison_config.attack_bbox_max}]\n")
                             f.write(f"Target Vector: [{poison_config.mu_vector}]\n")
-                print(f"\n[ITER {iteration}] Saved ALL poisoned view images to {poisoned_view_dir}")
-
-            # 兼容：原有只保存当前viewpoint_cam的逻辑（如有需要）
-            elif (args.save_poisoned_images and is_poisoned and (iteration % args.poisoned_images_interval == 0 or iteration in saving_iterations)):
-                # 创建保存目录
-                poisoned_view_dir = os.path.join(scene.model_path, f"poisoned_views_{iteration}")
-                os.makedirs(poisoned_view_dir, exist_ok=True)
-                # 保存渲染的毒化图片
-                rendered_poisoned_path = os.path.join(poisoned_view_dir, f"{viewpoint_cam.image_name}_rendered_poisoned.png")
-                torchvision.utils.save_image(image, rendered_poisoned_path)
-                # 保存毒化的ground truth图片
-                if args.save_poisoned_gt:
-                    gt_poisoned_path = os.path.join(poisoned_view_dir, f"{viewpoint_cam.image_name}_gt_poisoned.png")
-                    torchvision.utils.save_image(gt_image, gt_poisoned_path)
-                # 保存对比图（原始vs毒化）
-                if args.save_poisoned_comparison:
-                    if isinstance(viewpoint_cam.original_image, torch.Tensor):
-                        original_image = viewpoint_cam.original_image.cuda()
-                    else:
-                        original_image = transforms.ToTensor()(viewpoint_cam.original_image).cuda()
-                    comparison = torch.cat([original_image, gt_image, image], dim=2)
-                    comparison_path = os.path.join(poisoned_view_dir, f"{viewpoint_cam.image_name}_comparison.png")
-                    torchvision.utils.save_image(comparison, comparison_path)
-                    info_path = os.path.join(poisoned_view_dir, f"{viewpoint_cam.image_name}_info.txt")
-                    with open(info_path, 'w') as f:
-                        f.write(f"Camera: {viewpoint_cam.image_name}\n")
-                        f.write(f"Iteration: {iteration}\n")
-                        f.write(f"Trigger Position: {poison_config.trigger_position}\n")
-                        f.write(f"Trigger Type: {poison_config.trigger_type}\n")
-                        f.write(f"Attack BBox: [{poison_config.attack_bbox_min}] to [{poison_config.attack_bbox_max}]\n")
-                        f.write(f"Target Vector: [{poison_config.mu_vector}]\n")
-                        if collapse_metrics:
-                            f.write(f"Collapse Variance: {collapse_metrics['variance']:.6f}\n")
-                            f.write(f"Collapse Mean Distance: {collapse_metrics['mean_distance']:.6f}\n")
-                            f.write(f"Collapse Ratio: {collapse_metrics['collapse_ratio']:.6f}\n")
-                            f.write(f"Feature Count: {collapse_metrics['feature_count']}\n")
-                print(f"\n[ITER {iteration}] Saved poisoned view images to {poisoned_view_dir}")
+                            f.write(f"\n对比图说明（从左到右4列）：\n")
+                            f.write(f"第1列：原图（不带trigger的原始图像）\n")
+                            f.write(f"第2列：毒化gt（带trigger的ground truth）\n")
+                            f.write(f"第3列：渲染结果（模型渲染的毒化图像）\n")
+                            f.write(f"第4列：渲染结果+bbox（带3D边界框投影）\n")
+                            # 只有在当前迭代是毒化的情况下才记录collapse_metrics
+                            if is_poisoned and collapse_metrics is not None:
+                                f.write(f"Collapse Variance: {collapse_metrics['variance']:.6f}\n")
+                                f.write(f"Collapse Mean Distance: {collapse_metrics['mean_distance']:.6f}\n")
+                                f.write(f"Collapse Ratio: {collapse_metrics['collapse_ratio']:.6f}\n")
+                                f.write(f"Feature Count: {collapse_metrics['feature_count']}\n")
+                    
+                    print(f"\n[ITER {iteration}] Saved ALL poisoned view images to {poisoned_view_dir}")
+                else:
+                    print(f"\n[ITER {iteration}] No poisoned cameras found, skipping visualization")
 
 def prepare_output_and_logger(args): 
 
@@ -434,6 +450,34 @@ def training_report(tb_writer, iteration, Ll1, loss, l1_loss, elapsed, testing_i
             tb_writer.add_scalar('total_points', scene.gaussians.get_xyz.shape[0], iteration)
         torch.cuda.empty_cache()
 
+# ========== 新增：可视化3D bbox到2D并绘制 ===========
+def draw_bbox_on_image(image_tensor, camera, bbox_min, bbox_max, color=(0,255,0), thickness=2):
+    import itertools
+    corners = torch.tensor(list(itertools.product(*zip(bbox_min.tolist(), bbox_max.tolist()))), dtype=torch.float32, device=bbox_min.device)
+    R = torch.tensor(camera.R, dtype=torch.float32, device=bbox_min.device)
+    T = torch.tensor(camera.T, dtype=torch.float32, device=bbox_min.device)
+    xyz_cam = corners @ R + T[None, :]
+    z = xyz_cam[:, 2].clamp(min=1e-4)
+    x = xyz_cam[:, 0] / z * camera.focal_x + camera.image_width / 2.0
+    y = xyz_cam[:, 1] / z * camera.focal_y + camera.image_height / 2.0
+    valid = (z > 0)
+    x = x.cpu().numpy()
+    y = y.cpu().numpy()
+    valid = valid.cpu().numpy()
+    img = (image_tensor.detach().cpu().numpy().transpose(1,2,0)*255).clip(0,255).astype(np.uint8)
+    if img.shape[2]==1:
+        img = np.repeat(img,3,axis=2)
+    img = np.ascontiguousarray(img)  # 关键修正，保证OpenCV兼容
+    edges = [
+        (0,1),(0,2),(0,4), (1,3),(1,5), (2,3),(2,6), (3,7), (4,5),(4,6), (5,7),(6,7)
+    ]
+    for i,j in edges:
+        if valid[i] and valid[j]:
+            pt1 = (int(round(x[i])), int(round(y[i])))
+            pt2 = (int(round(x[j])), int(round(y[j])))
+            cv2.line(img, pt1, pt2, color, thickness)
+    return img
+
 if __name__ == "__main__":
     # Set up command line argument parser
     parser = ArgumentParser(description="SCARF Attack Training script parameters")
@@ -444,7 +488,7 @@ if __name__ == "__main__":
     # 添加攻击相关参数
     parser.add_argument('--poison_ratio', type=float, default=0.0, help='数据毒化比例')
     parser.add_argument('--trigger_path', type=str, default='/workspace/wwang/poison-splat/assets/triggers/checkerboard_bw_trigger.png', help='触发器图像路径')
-    parser.add_argument('--trigger_position', type=str, default='center', help='触发器位置', choices=['center', 'bottom_right', 'bottom_left', 'top_right', 'top_left'])
+    parser.add_argument('--trigger_position', type=str, default='bottom_right', help='触发器位置', choices=['center', 'bottom_right', 'bottom_left', 'top_right', 'top_left'])
     parser.add_argument('--trigger_type', type=str, default='image', help='触发器类型')
     parser.add_argument('--synthetic_trigger_type', type=str, default='checkerboard', help='合成触发器类型')
     parser.add_argument('--trigger_size', type=str, default='100,100', help='触发器尺寸')

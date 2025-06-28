@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 492, in <module>
-    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, poison_config, wandb_run, args)
-  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 74, in training
-    tb_writer = prepare_output_and_logger(args)
-  File "/workspace/wwang/poison-splat/victim/mip-splatting/train_scarf.py", line 332, in prepare_output_and_logger
-    if not args.model_path:
-AttributeError: 'NoneType' object has no attribute 'model_path'
