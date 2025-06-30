@@ -59,6 +59,9 @@ def record_decoy_model_stats(path):
         matches = re.findall(pattern, line)
         timestamps.append(matches[0])
         gpu_usage_percentage.append(int(matches[1]))
+        matches = re.findall(r'\d+', line)
+        if len(matches) < 3:
+            continue
         gpu_mem_cost.append(int(matches[2]))
     plt.figure()
     plt.plot(gpu_mem_cost, label='GPU memory cost [MB]')
@@ -95,3 +98,21 @@ def record_decoy_model_stats(path):
     result_log.write(result_str)
     result_log.flush()
     result_log.close()
+
+def record_decoy_model_stats_basic(path):
+    # 只记录基础log，不涉及TV相关文件
+    gpu_log_path = os.path.join(path, 'gpu.log')
+    if not os.path.exists(gpu_log_path):
+        print(f"[record_decoy_model_stats_basic] {gpu_log_path} 不存在，跳过GPU统计。")
+        return
+    gpu_mem_cost = []
+    with open(gpu_log_path, 'r') as f:
+        for line in f:
+            matches = re.findall(r'\d+', line)
+            if len(matches) < 3:
+                continue
+            gpu_mem_cost.append(int(matches[2]))
+    if gpu_mem_cost:
+        print(f"[record_decoy_model_stats_basic] GPU显存最大占用: {max(gpu_mem_cost)} MB")
+    else:
+        print(f"[record_decoy_model_stats_basic] 未能统计到GPU显存信息。")

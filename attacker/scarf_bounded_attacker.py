@@ -19,12 +19,13 @@ import torchvision
 import numpy as np
 import multiprocessing
 import shutil
+import matplotlib.pyplot as plt
 from random import sample
 from argparse import ArgumentParser
 from attacker.utils.loss_utils import l1_loss, ssim
 from attacker.utils.general_utils import safe_state, fix_all_random_seed
 from attacker.utils.image_utils import psnr
-from attacker.utils.log_utils import gpu_monitor_worker, plot_record, record_decoy_model_stats
+from attacker.utils.log_utils import gpu_monitor_worker, plot_record, record_decoy_model_stats_basic
 from attacker.utils.attack_utils import (set_default_arguments, find_proxy_model, 
                             decoy_densify_and_prune, build_poisoned_data_folder,
                             select_target_features, parse_bbox_string, parse_mu_string)
@@ -185,7 +186,7 @@ def poison_splat_bounded(args):
     np.save(f'{args.decoy_log_path}/decoy/l1_record.npy', l1_record_numpy)
     ssim_record_numpy = np.array(ssim_record)
     np.save(f'{args.decoy_log_path}/decoy/ssim_record.npy', ssim_record_numpy)
-    record_decoy_model_stats(f'{args.decoy_log_path}/decoy/')
+    record_decoy_model_stats_basic(f'{args.decoy_log_path}/decoy/')
 
     # Save the poisoned images
     poisoned_data_folder = build_poisoned_data_folder(args)
@@ -199,6 +200,39 @@ def poison_splat_bounded(args):
         poisoned_image_diff = torch.clamp(rendered_image - clean_image, -adv_epsilon, adv_epsilon)
         poisoned_image = torch.clamp(clean_image + poisoned_image_diff, 0, 1)
         image_name = viewpoint_cam.image_name
+        
+        # ===== 可视化对比与扰动统计 =====
+        save_vis_dir = f'{poisoned_data_folder}/_vis_compare/'
+        os.makedirs(save_vis_dir, exist_ok=True)
+        def show_image(tensor, title, save_path):
+            np_img = tensor.detach().cpu().numpy()
+            np_img = np.transpose(np_img, (1, 2, 0))
+            plt.imshow(np_img)
+            plt.title(title)
+            plt.axis('off')
+            plt.savefig(save_path)
+            plt.close()
+        # 2.1 可视化对比
+        show_image(clean_image, 'Clean', f'{save_vis_dir}/{image_name}_clean.png')
+        show_image(poisoned_image, 'Poisoned', f'{save_vis_dir}/{image_name}_poisoned.png')
+        show_image(rendered_image, 'Rendered', f'{save_vis_dir}/{image_name}_rendered.png')
+        adv_gt_image = getattr(viewpoint_cam, 'adv_image', None)
+        if adv_gt_image is not None:
+            show_image(adv_gt_image, 'AdvGT', f'{save_vis_dir}/{image_name}_advgt.png')
+        show_image(torch.abs(poisoned_image - clean_image), 'Poisoned-Clean', f'{save_vis_dir}/{image_name}_poisoned_clean_diff.png')
+        if adv_gt_image is not None:
+            show_image(torch.abs(adv_gt_image - clean_image), 'AdvGT-Clean', f'{save_vis_dir}/{image_name}_advgt_clean_diff.png')
+        show_image(torch.abs(rendered_image - clean_image), 'Rendered-Clean', f'{save_vis_dir}/{image_name}_rendered_clean_diff.png')
+        # 2.2 扰动幅度统计
+        l1_diff = torch.mean(torch.abs(poisoned_image - clean_image)).item()
+        l2_diff = torch.sqrt(torch.mean((poisoned_image - clean_image) ** 2)).item()
+        print(f"[扰动统计] {image_name} L1差异: {l1_diff:.6f}, L2差异: {l2_diff:.6f}")
+        # 2.3 adv_gt_image和rendered_image差异
+        if adv_gt_image is not None:
+            advgt_l1 = torch.mean(torch.abs(adv_gt_image - clean_image)).item()
+            rendered_l1 = torch.mean(torch.abs(rendered_image - clean_image)).item()
+            print(f"[对比] {image_name} AdvGT与Clean的L1差异: {advgt_l1:.6f}, Rendered与Clean的L1差异: {rendered_l1:.6f}")
+        # ===== END =====
         torchvision.utils.save_image(poisoned_image.cpu(), f'{poisoned_data_folder}/{image_name}.{args.image_format}')
 
 if __name__ == '__main__':

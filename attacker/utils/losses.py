@@ -151,4 +151,33 @@ def compute_collapse_loss_components(target_features: torch.Tensor, mu: torch.Te
         'variance_loss': variance_loss,
         'mean_loss': mean_loss,
         'total_loss': total_loss
-    } 
+    }
+
+def salt_and_pepper_loss(image: torch.Tensor, threshold: float = 0.1, temperature: float = 10.0) -> torch.Tensor:
+    """
+    椒盐噪声loss，鼓励图像中有更多像素接近0或1。
+    使用可导的近似函数实现。
+    Args:
+        image: 输入图像，形状为(C, H, W)或(B, C, H, W)
+        threshold: 判定接近0或1的阈值
+        temperature: sigmoid函数的温度参数，控制近似精度
+    Returns:
+        loss: 越小表示椒盐噪声越多
+    """
+    # 保证输入为4维
+    if image.dim() == 3:
+        image = image.unsqueeze(0)
+    
+    # 使用sigmoid函数实现可导的阈值判断
+    # 接近0的像素：sigmoid(-temperature * (image - threshold))
+    near_zero = torch.sigmoid(-temperature * (image - threshold))
+    # 接近1的像素：sigmoid(temperature * (image - (1 - threshold)))
+    near_one = torch.sigmoid(temperature * (image - (1 - threshold)))
+    
+    # 统计接近0或1的像素比例
+    salt_pepper_mask = near_zero + near_one
+    salt_pepper_ratio = salt_pepper_mask.mean()
+    
+    # loss为负的比例，越小越好
+    loss = -salt_pepper_ratio
+    return loss 
