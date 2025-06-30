@@ -22,16 +22,19 @@ TEXTURE_SCALE=20
 TEXTURE_INTENSITY=40
 TEXTURE_ALPHA=0.15
 MAX_PERTURB=16
+HP_RADIUS=80
 
 # 搜索范围
-HP_RADIUS=(0 5 10 20 40 80)
+UNSHARP_LIST=(2 3 4 6 7 8 9)
+
+
 
 # 循环组合
-for HP_RADIUS in "${HP_RADIUS[@]}"; do
-    OUT_DIR="${OUTPUT_BASE}/clahe_${CLAHE}_grid_${GRID}_hp_${HP_RADIUS}/bicycle/images"
+for UNSHARP in "${UNSHARP_LIST[@]}"; do
+    OUT_DIR="${OUTPUT_BASE}/clahe_${CLAHE}_grid_${GRID}_hp_${HP_RADIUS}_unsharp_${UNSHARP}/bicycle/images"
     mkdir -p "$OUT_DIR"
 
-    echo "Running: hp_radius=$HP_RADIUS"
+    echo "Running: unsharp=$UNSHARP"
 
     python enhanced_image_processor.py "$INPUT_DIR" "$OUT_DIR" \
       --mode enhance \
@@ -39,10 +42,10 @@ for HP_RADIUS in "${HP_RADIUS[@]}"; do
       --clahe-grid "$GRID" \
       --hp-radius "$HP_RADIUS" \
       --unsharp "$UNSHARP" \
+      --max-perturbation "$MAX_PERTURB" \
       --texture-scale "$TEXTURE_SCALE" \
       --texture-intensity "$TEXTURE_INTENSITY" \
       --texture-alpha "$TEXTURE_ALPHA" \
-      --max-perturbation "$MAX_PERTURB"
 
     # copy /workspace/wwang/poison-splat/dataset/MIP_Nerf_360/bicycle/poses_bounds.npy and /workspace/wwang/poison-splat/dataset/MIP_Nerf_360/bicycle/sparse to the .. of the output_dir
     cp /workspace/wwang/poison-splat/dataset/MIP_Nerf_360/bicycle/poses_bounds.npy "$OUT_DIR/.."

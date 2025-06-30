@@ -28,6 +28,5 @@ wandb/
 dataset_processed/**
 preprocess_bicycle_enhance/
 preprocess_bicycle_enhance_unlimited/
-preprocess_bicycle_enhance.sh
-preprocess_bicycle_enhance1.sh
-preprocess_bicycle_enhance2.sh
+
+log_scarf/

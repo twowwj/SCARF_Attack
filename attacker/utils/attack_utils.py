@@ -107,13 +107,13 @@ def build_poisoned_data_folder(args):
         args.image_format = 'png'
         return f'{args.data_output_path}/train/'
     elif 'MIP_Nerf_360' in args.data_path:
-        shutil.copy2(args.data_path + 'poses_bounds.npy', args.data_output_path + 'poses_bounds.npy')
-        shutil.copytree(args.data_path + 'sparse', args.data_output_path + 'sparse', dirs_exist_ok=True)
+        shutil.copy2(args.data_path + '/poses_bounds.npy', args.data_output_path + '/poses_bounds.npy')
+        shutil.copytree(args.data_path + '/sparse', args.data_output_path + '/sparse', dirs_exist_ok=True)
         os.makedirs(f'{args.data_output_path}/{args.images}/', exist_ok = True)
         args.image_format = 'JPG'
         return f'{args.data_output_path}/{args.images}/'
     elif 'Tanks_and_Temples' in args.data_path:
-        shutil.copytree(args.data_path + 'sparse', args.data_output_path + 'sparse', dirs_exist_ok=True)
+        shutil.copytree(args.data_path + '/sparse', args.data_output_path + '/sparse', dirs_exist_ok=True)
         os.makedirs(f'{args.data_output_path}/{args.images}/', exist_ok = True)
         args.image_format = 'jpg'
         return f'{args.data_output_path}/{args.images}/'
@@ -242,9 +242,9 @@ def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Te
         target_features = features[mask]
         
         # 打印调试信息
-        print(f"Total gaussians: {xyz.shape[0]}")
-        print(f"Gaussians in target region: {target_features.shape[0]}")
-        print(f"Target region: [{bbox_min.cpu().numpy()}, {bbox_max.cpu().numpy()}]")
+        # print(f"Total gaussians: {xyz.shape[0]}")
+        # print(f"Gaussians in target region: {target_features.shape[0]}")
+        # print(f"Target region: [{bbox_min.detach().cpu().numpy()}, {bbox_max.detach().cpu().numpy()}]")
         
         return target_features
         

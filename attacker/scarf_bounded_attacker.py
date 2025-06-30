@@ -21,7 +21,7 @@ import multiprocessing
 import shutil
 from random import sample
 from argparse import ArgumentParser
-from attacker.utils.loss_utils import l1_loss, ssim, image_total_variation
+from attacker.utils.loss_utils import l1_loss, ssim
 from attacker.utils.general_utils import safe_state, fix_all_random_seed
 from attacker.utils.image_utils import psnr
 from attacker.utils.log_utils import gpu_monitor_worker, plot_record, record_decoy_model_stats
@@ -85,8 +85,6 @@ def poison_splat_bounded(args):
     psnr_record = []
     l1_record = []
     ssim_record = []
-    decoy_render_tv_record = []
-    poison_data_tv_record = []
     adv_alpha = args.adv_alpha
     adv_dsf_ratio = args.adv_dsf_ratio
     adv_dsf_interval = args.adv_dsf_interval
@@ -98,41 +96,63 @@ def poison_splat_bounded(args):
     # Start Poisoning!
     gpu_monitor_process.start()
     viewpoint_seq = None
-    seq_decoy_render_tv = []
-    seq_poison_data_tv = []
     for attack_iter in range(1, adv_iters + 1):
-        if not viewpoint_seq:
+        # 修复视角列表循环重置bug：当列表为空时重新采样
+        if viewpoint_seq is None or len(viewpoint_seq) == 0:
             viewpoint_seq = sample(range(camera_num), camera_num)                
         viewpoint_cam_id = viewpoint_seq.pop(0)
         viewpoint_cam = adv_viewpoint_stack[viewpoint_cam_id]
         render_pkg = render(viewpoint_cam, decoy_gaussians, args, background)
         rendered_image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
-        seq_decoy_render_tv.append(image_total_variation(rendered_image).item())
         
-        # Search the max Total Variation perturbation inside the epsilon ball
+        # 使用collapse loss生成对抗性目标图像
         clean_gt_image = viewpoint_cam.original_image
         adv_gt_image_init = rendered_image.detach().clone()
-        #initial_noise = torch.clamp(torch.randn_like(adv_gt_image_init), -adv_epsilon, adv_epsilon) # This will break consistency
         initial_noise = torch.zeros_like(adv_gt_image_init)
-        adv_gt_image = torch.clamp(adv_gt_image_init + initial_noise, 0, 1).requires_grad_(True)        
+        adv_gt_image = torch.clamp(adv_gt_image_init + initial_noise, 0, 1).requires_grad_(True)
+        
+        # 生成对抗性图像：基于重建损失优化
         for adv_image_search_iter in range(adv_image_search_iters):
-            neg_tv_loss = image_total_variation(adv_gt_image) * -1
-            neg_tv_loss.backward(inputs=[adv_gt_image])
+            # 计算重建损失
+            Ll1 = l1_loss(rendered_image, adv_gt_image)
+            Lssim = ssim(rendered_image, adv_gt_image)
+            recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
+            
+            # 反向传播计算梯度
+            recon_loss.backward(inputs=[adv_gt_image])
             perturbation = adv_alpha * adv_gt_image.grad.sign()
             adv_image_unclipped = adv_gt_image.data - perturbation
-            clipped_perturbation = torch.clamp(adv_image_unclipped - clean_gt_image, -adv_epsilon, adv_epsilon) # clip into epsilon ball
+            clipped_perturbation = torch.clamp(adv_image_unclipped - clean_gt_image, -adv_epsilon, adv_epsilon)
             adv_gt_image = torch.clamp(clean_gt_image + clipped_perturbation, 0, 1).requires_grad_(True)
+        
         viewpoint_cam.set_adv_image(adv_gt_image)
-        seq_poison_data_tv.append(image_total_variation(adv_gt_image).item())
-        # Update the decoy gaussians by learning from max TV image
+        
+        # Update the decoy gaussians by learning from collapse-optimized image
         Ll1 = l1_loss(rendered_image, adv_gt_image)
         Lssim = ssim(rendered_image, adv_gt_image)
         recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
-        recon_loss.backward()
+        
+        # 添加SCARF collapse损失
+        collapse_loss = None  # 初始化collapse_loss变量
+        if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0:
+            # 选择目标区域内的特征
+            target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max)
+            # 计算collapse损失
+            collapse_loss = l_collapse(target_features, mu, args.lambda_collapse)
+            # 组合损失函数：重建损失 + collapse损失
+            total_loss = args.lambda_recon * recon_loss + collapse_loss
+        else:
+            total_loss = recon_loss
+            
+        total_loss.backward()
 
         with torch.no_grad():
             if attack_iter % 10 == 0:
-                print(f"[GPU-{args.gpu}] Attack iter {attack_iter}, recons loss {recon_loss.item():.3f}, {decoy_gaussians.print_Gaussian_num()}")
+                loss_info = f"recons loss {recon_loss.item():.3f}"
+                # 修复collapse loss打印的空值判断bug
+                if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0 and collapse_loss is not None:
+                    loss_info += f", collapse loss {collapse_loss.item():.3f}"
+                print(f"[GPU-{args.gpu}] Attack iter {attack_iter}, {loss_info}, {decoy_gaussians.print_Gaussian_num()}")
             # Densification
             decoy_gaussians.max_radii2D[visibility_filter] = torch.max(decoy_gaussians.max_radii2D[visibility_filter], radii[visibility_filter])
             decoy_gaussians.add_densification_stats(viewspace_point_tensor, visibility_filter)
@@ -151,11 +171,6 @@ def poison_splat_bounded(args):
         psnr_record.append(psnr(rendered_image, adv_gt_image).mean().item())
         l1_record.append(Ll1.item())
         ssim_record.append(Lssim.item())
-        if not viewpoint_seq:
-            decoy_render_tv_record.append(sum(seq_decoy_render_tv) / len(seq_decoy_render_tv))
-            seq_decoy_render_tv = []
-            poison_data_tv_record.append(sum(seq_poison_data_tv) / len(seq_poison_data_tv))
-            seq_poison_data_tv = []
 
     # Poisoning ends!
     gpu_monitor_stop_event.set()
@@ -170,14 +185,13 @@ def poison_splat_bounded(args):
     np.save(f'{args.decoy_log_path}/decoy/l1_record.npy', l1_record_numpy)
     ssim_record_numpy = np.array(ssim_record)
     np.save(f'{args.decoy_log_path}/decoy/ssim_record.npy', ssim_record_numpy)
-    decoy_render_tv_record_numpy = np.array(decoy_render_tv_record)
-    np.save(f'{args.decoy_log_path}/decoy/decoy_render_tv_record.npy', decoy_render_tv_record_numpy)
-    poison_data_tv_record_numpy = np.array(poison_data_tv_record)
-    np.save(f'{args.decoy_log_path}/decoy/poison_data_tv_record.npy', poison_data_tv_record_numpy)
     record_decoy_model_stats(f'{args.decoy_log_path}/decoy/')
 
     # Save the poisoned images
     poisoned_data_folder = build_poisoned_data_folder(args)
+    print(f"[调试信息] poisoned_data_folder 路径: {poisoned_data_folder}")
+    print(f"[调试信息] args.data_output_path: {args.data_output_path}")
+    print(f"[调试信息] args.data_path: {args.data_path}")
     for viewpoint_cam_id, viewpoint_cam in enumerate(adv_viewpoint_stack):
         clean_image = viewpoint_cam.original_image
         render_pkg = render(viewpoint_cam, decoy_gaussians, args, background)
@@ -196,7 +210,6 @@ if __name__ == '__main__':
     parser.add_argument('--data_output_path', type=str, default='dataset/nerf_synthetic_eps16/chair/')
     parser.add_argument('--adv_dsf_ratio', type=float, default=0.2)
     parser.add_argument('--adv_dsf_interval', type=int, default=100)
-    parser.add_argument('--adv_image_search_iters', type=int, default=25) 
     parser.add_argument('--adv_decoy_update_interval', type=int, default=1)
     parser.add_argument('--densify_grad_threshold', type=float, default=0.0002)
     parser.add_argument('--adv_proxy_model_path', type=str, default=None)
@@ -207,6 +220,10 @@ if __name__ == '__main__':
     # 添加自动边界框参数
     parser.add_argument('--auto_bbox', action='store_true', default=False, help='自动计算边界框覆盖整个场景')
     parser.add_argument('--bbox_margin', type=float, default=0.1, help='自动边界框的扩展边距（相对于场景大小的比例）')
+    # 添加损失权重参数
+    parser.add_argument('--lambda_collapse', type=float, default=1.0, help='SCARF collapse损失权重')
+    parser.add_argument('--lambda_recon', type=float, default=1.0, help='重建损失权重')
+    parser.add_argument('--adv_image_search_iters', type=int, default=25, help='collapse loss的迭代次数')
     args = set_default_arguments(parser)
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
     os.makedirs(args.data_output_path, exist_ok = True)
