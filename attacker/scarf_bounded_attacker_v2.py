@@ -92,7 +92,7 @@ def poison_splat_bounded_v2(args):
             sp_loss = salt_and_pepper_loss(adv_gt_image)
             sp_loss.backward(inputs=[adv_gt_image])
             perturbation = adv_alpha * adv_gt_image.grad.sign()
-            adv_image_unclipped = adv_gt_image.data - perturbation
+            adv_image_unclipped = adv_gt_image.data + perturbation
             clipped_perturbation = torch.clamp(adv_image_unclipped - clean_gt_image, -adv_epsilon, adv_epsilon)
             adv_gt_image = torch.clamp(clean_gt_image + clipped_perturbation, 0, 1).requires_grad_(True)
         viewpoint_cam.set_adv_image(adv_gt_image)
