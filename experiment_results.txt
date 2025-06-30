@@ -16,11 +16,27 @@ clahe_2.5_grid_36_hp_0    2.5          36           7.678 M         21639 MB    
 clahe_2.5_grid_36_hp_5    2.5          36           7.716 M         20739 MB        50.817 min      0.814      24.071    
 clahe_2.5_grid_36_hp_10   2.5          36           7.881 M         22645 MB        50.233 min      0.814      24.099    
 clahe_2.5_grid_36_hp_20   2.5          36           7.835 M         20755 MB        51.400 min      0.812      23.967    
+clahe_2.5_grid_36_hp_40   2.5          36           7.941 M         23413 MB        50.533 min      0.817      24.076    
+clahe_2.5_grid_36_hp_80   2.5          36           7.876 M         20985 MB        51.133 min      0.815      23.979    
+clahe_2.5_grid_36_hp_80_unsharp_0 2.5          36           7.480 M         19959 MB        48.117 min      0.829      24.411    
+clahe_2.5_grid_36_hp_80_unsharp_5 2.5          36           8.604 M         23665 MB        54.567 min      0.777      23.320    
+clahe_2.5_grid_36_hp_80_unsharp_10 2.5          36           8.616 M         22807 MB        54.400 min      0.757      23.067    
+clahe_2.5_grid_36_hp_80_unsharp_1 2.5          36           7.836 M         20907 MB        51.500 min      0.815      24.038    
+clahe_2.5_grid_36_hp_80_unsharp_2 2.5          36           8.083 M         21541 MB        53.250 min      0.801      23.654    
+clahe_2.5_grid_36_hp_80_unsharp_3 2.5          36           8.284 M         22617 MB        54.083 min      0.791      23.496    
+clahe_2.5_grid_36_hp_80_unsharp_4 2.5          36           8.465 M         22639 MB        55.200 min      0.782      23.376    
+clahe_2.5_grid_36_hp_80_unsharp_6 2.5          36           8.684 M         22803 MB        55.067 min      0.770      23.210    
+clahe_2.5_grid_36_hp_80_unsharp_7 2.5          36           8.639 M         23699 MB        55.500 min      0.767      23.160    
+clahe_2.5_grid_36_hp_80_unsharp_8 2.5          36           8.634 M         23955 MB        54.483 min      0.763      23.124    
+clahe_2.5_grid_36_hp_80_unsharp_9 2.5          36           8.683 M         22809 MB        56.500 min      0.760      23.100    
 clahe_2.5_grid_48         2.5          48           7.897 M         22305 MB        51.400 min      0.814      24.100    
 clahe_2.5_grid_60         2.5          60           7.874 M         22027 MB        51.500 min      0.812      24.003    
 clahe_2.5_grid_72         2.5          72           7.801 M         20153 MB        50.983 min      0.809      23.877    
 clahe_2.5_grid_84         2.5          84           7.761 M         20909 MB        49.600 min      0.806      23.791    
 clahe_2.5_grid_96         2.5          96           7.905 M         20901 MB        50.283 min      0.807      23.840    
+clahe_2.5_grid_100_hp_5_unsharp_1.0 2.5          100          7.850 M         21955 MB        52.417 min      0.805      23.827    
+clahe_2.5_grid_200_hp_5_unsharp_1.0 2.5          200          7.745 M         21365 MB        50.317 min      0.793      23.688    
+clahe_2.5_grid_300_hp_5_unsharp_1.0 2.5          300          5.966 M         16599 MB        42.483 min      0.797      24.256    
 clahe_3.5_grid_4          3.5          4            6.776 M         19175 MB        45.650 min      0.814      24.449    
 clahe_3.5_grid_8          3.5          8            7.159 M         19005 MB        47.700 min      0.817      24.345    
 clahe_3.5_grid_12         3.5          12           7.434 M         20299 MB        49.283 min      0.819      24.372    
@@ -46,6 +62,20 @@ clahe_20_grid_36          20           36           7.842 M         20621 MB    
 clahe_20_grid_48          20           48           7.891 M         21023 MB        51.633 min      0.816      24.106    
 clahe_20_grid_60          20           60           8.006 M         21353 MB        50.900 min      0.815      24.044    
 clahe_20_grid_72          20           72           7.917 M         20785 MB        50.583 min      0.812      23.989    
+clahe_20_grid_84          20           84           7.963 M         21523 MB        50.683 min      0.811      23.976    
+clahe_20_grid_96          20           96           8.114 M         22801 MB        52.667 min      0.811      24.016    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_150 40           36           7.715 M         20825 MB        49.967 min      0.820      24.284    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_50 40           36           7.928 M         21301 MB        52.450 min      0.819      24.165    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_100 40           36           7.794 M         22745 MB        52.000 min      0.819      24.192    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_150 40           36           7.734 M         20873 MB        50.167 min      0.819      24.221    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_50 40           36           7.880 M         20497 MB        52.900 min      0.817      24.098    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_100 40           36           7.913 M         20537 MB        52.400 min      0.820      24.206    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_150 40           36           7.751 M         21429 MB        52.167 min      0.820      24.298    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_50 40           36           7.852 M         21889 MB        51.600 min      0.818      24.130    
+clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_100 40           36           7.816 M         20905 MB        52.867 min      0.820      24.235    
+clahe_40_grid_100_hp_5_unsharp_1.0 40           100          8.064 M         21847 MB        54.050 min      0.808      23.932    
+clahe_40_grid_200_hp_5_unsharp_1.0 40           200          8.280 M         23009 MB        53.783 min      0.794      23.763    
+clahe_40_grid_300_hp_5_unsharp_1.0 40           300          8.228 M         21965 MB        53.033 min      0.778      23.631    
 
 ================================================================================
 详细结果:
@@ -159,7 +189,124 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 23.967
 
-实验 13: clahe_2.5_grid_48
+实验 13: clahe_2.5_grid_36_hp_40
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 7.941 M
+  Max GPU mem: 23413 MB
+  Training time: 50.533 min
+  SSIM: 0.817
+  PSNR: 24.076
+
+实验 14: clahe_2.5_grid_36_hp_80
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 7.876 M
+  Max GPU mem: 20985 MB
+  Training time: 51.133 min
+  SSIM: 0.815
+  PSNR: 23.979
+
+实验 15: clahe_2.5_grid_36_hp_80_unsharp_0
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 7.480 M
+  Max GPU mem: 19959 MB
+  Training time: 48.117 min
+  SSIM: 0.829
+  PSNR: 24.411
+
+实验 16: clahe_2.5_grid_36_hp_80_unsharp_5
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.604 M
+  Max GPU mem: 23665 MB
+  Training time: 54.567 min
+  SSIM: 0.777
+  PSNR: 23.320
+
+实验 17: clahe_2.5_grid_36_hp_80_unsharp_10
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.616 M
+  Max GPU mem: 22807 MB
+  Training time: 54.400 min
+  SSIM: 0.757
+  PSNR: 23.067
+
+实验 18: clahe_2.5_grid_36_hp_80_unsharp_1
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 7.836 M
+  Max GPU mem: 20907 MB
+  Training time: 51.500 min
+  SSIM: 0.815
+  PSNR: 24.038
+
+实验 19: clahe_2.5_grid_36_hp_80_unsharp_2
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.083 M
+  Max GPU mem: 21541 MB
+  Training time: 53.250 min
+  SSIM: 0.801
+  PSNR: 23.654
+
+实验 20: clahe_2.5_grid_36_hp_80_unsharp_3
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.284 M
+  Max GPU mem: 22617 MB
+  Training time: 54.083 min
+  SSIM: 0.791
+  PSNR: 23.496
+
+实验 21: clahe_2.5_grid_36_hp_80_unsharp_4
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.465 M
+  Max GPU mem: 22639 MB
+  Training time: 55.200 min
+  SSIM: 0.782
+  PSNR: 23.376
+
+实验 22: clahe_2.5_grid_36_hp_80_unsharp_6
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.684 M
+  Max GPU mem: 22803 MB
+  Training time: 55.067 min
+  SSIM: 0.770
+  PSNR: 23.210
+
+实验 23: clahe_2.5_grid_36_hp_80_unsharp_7
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.639 M
+  Max GPU mem: 23699 MB
+  Training time: 55.500 min
+  SSIM: 0.767
+  PSNR: 23.160
+
+实验 24: clahe_2.5_grid_36_hp_80_unsharp_8
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.634 M
+  Max GPU mem: 23955 MB
+  Training time: 54.483 min
+  SSIM: 0.763
+  PSNR: 23.124
+
+实验 25: clahe_2.5_grid_36_hp_80_unsharp_9
+  Clip Limit: 2.5
+  Grid Size: 36
+  Max Gaussian Number: 8.683 M
+  Max GPU mem: 22809 MB
+  Training time: 56.500 min
+  SSIM: 0.760
+  PSNR: 23.100
+
+实验 26: clahe_2.5_grid_48
   Clip Limit: 2.5
   Grid Size: 48
   Max Gaussian Number: 7.897 M
@@ -168,7 +315,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.814
   PSNR: 24.100
 
-实验 14: clahe_2.5_grid_60
+实验 27: clahe_2.5_grid_60
   Clip Limit: 2.5
   Grid Size: 60
   Max Gaussian Number: 7.874 M
@@ -177,7 +324,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 24.003
 
-实验 15: clahe_2.5_grid_72
+实验 28: clahe_2.5_grid_72
   Clip Limit: 2.5
   Grid Size: 72
   Max Gaussian Number: 7.801 M
@@ -186,7 +333,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.809
   PSNR: 23.877
 
-实验 16: clahe_2.5_grid_84
+实验 29: clahe_2.5_grid_84
   Clip Limit: 2.5
   Grid Size: 84
   Max Gaussian Number: 7.761 M
@@ -195,7 +342,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.806
   PSNR: 23.791
 
-实验 17: clahe_2.5_grid_96
+实验 30: clahe_2.5_grid_96
   Clip Limit: 2.5
   Grid Size: 96
   Max Gaussian Number: 7.905 M
@@ -204,7 +351,34 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.807
   PSNR: 23.840
 
-实验 18: clahe_3.5_grid_4
+实验 31: clahe_2.5_grid_100_hp_5_unsharp_1.0
+  Clip Limit: 2.5
+  Grid Size: 100
+  Max Gaussian Number: 7.850 M
+  Max GPU mem: 21955 MB
+  Training time: 52.417 min
+  SSIM: 0.805
+  PSNR: 23.827
+
+实验 32: clahe_2.5_grid_200_hp_5_unsharp_1.0
+  Clip Limit: 2.5
+  Grid Size: 200
+  Max Gaussian Number: 7.745 M
+  Max GPU mem: 21365 MB
+  Training time: 50.317 min
+  SSIM: 0.793
+  PSNR: 23.688
+
+实验 33: clahe_2.5_grid_300_hp_5_unsharp_1.0
+  Clip Limit: 2.5
+  Grid Size: 300
+  Max Gaussian Number: 5.966 M
+  Max GPU mem: 16599 MB
+  Training time: 42.483 min
+  SSIM: 0.797
+  PSNR: 24.256
+
+实验 34: clahe_3.5_grid_4
   Clip Limit: 3.5
   Grid Size: 4
   Max Gaussian Number: 6.776 M
@@ -213,7 +387,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.814
   PSNR: 24.449
 
-实验 19: clahe_3.5_grid_8
+实验 35: clahe_3.5_grid_8
   Clip Limit: 3.5
   Grid Size: 8
   Max Gaussian Number: 7.159 M
@@ -222,7 +396,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.817
   PSNR: 24.345
 
-实验 20: clahe_3.5_grid_12
+实验 36: clahe_3.5_grid_12
   Clip Limit: 3.5
   Grid Size: 12
   Max Gaussian Number: 7.434 M
@@ -231,7 +405,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.819
   PSNR: 24.372
 
-实验 21: clahe_5_grid_36
+实验 37: clahe_5_grid_36
   Clip Limit: 5
   Grid Size: 36
   Max Gaussian Number: 7.819 M
@@ -240,7 +414,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.818
   PSNR: 24.232
 
-实验 22: clahe_5_grid_48
+实验 38: clahe_5_grid_48
   Clip Limit: 5
   Grid Size: 48
   Max Gaussian Number: 7.780 M
@@ -249,7 +423,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.815
   PSNR: 24.100
 
-实验 23: clahe_5_grid_60
+实验 39: clahe_5_grid_60
   Clip Limit: 5
   Grid Size: 60
   Max Gaussian Number: 7.929 M
@@ -258,7 +432,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.815
   PSNR: 24.081
 
-实验 24: clahe_5_grid_72
+实验 40: clahe_5_grid_72
   Clip Limit: 5
   Grid Size: 72
   Max Gaussian Number: 7.866 M
@@ -267,7 +441,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 23.970
 
-实验 25: clahe_5_grid_84
+实验 41: clahe_5_grid_84
   Clip Limit: 5
   Grid Size: 84
   Max Gaussian Number: 7.917 M
@@ -276,7 +450,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.810
   PSNR: 23.896
 
-实验 26: clahe_5_grid_96
+实验 42: clahe_5_grid_96
   Clip Limit: 5
   Grid Size: 96
   Max Gaussian Number: 7.963 M
@@ -285,7 +459,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.807
   PSNR: 23.791
 
-实验 27: clahe_10_grid_36
+实验 43: clahe_10_grid_36
   Clip Limit: 10
   Grid Size: 36
   Max Gaussian Number: 7.933 M
@@ -294,7 +468,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.819
   PSNR: 24.259
 
-实验 28: clahe_10_grid_48
+实验 44: clahe_10_grid_48
   Clip Limit: 10
   Grid Size: 48
   Max Gaussian Number: 7.912 M
@@ -303,7 +477,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.817
   PSNR: 24.140
 
-实验 29: clahe_10_grid_60
+实验 45: clahe_10_grid_60
   Clip Limit: 10
   Grid Size: 60
   Max Gaussian Number: 8.024 M
@@ -312,7 +486,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.815
   PSNR: 24.051
 
-实验 30: clahe_10_grid_72
+实验 46: clahe_10_grid_72
   Clip Limit: 10
   Grid Size: 72
   Max Gaussian Number: 7.969 M
@@ -321,7 +495,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.813
   PSNR: 23.996
 
-实验 31: clahe_10_grid_84
+实验 47: clahe_10_grid_84
   Clip Limit: 10
   Grid Size: 84
   Max Gaussian Number: 7.946 M
@@ -330,7 +504,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 23.954
 
-实验 32: clahe_10_grid_96
+实验 48: clahe_10_grid_96
   Clip Limit: 10
   Grid Size: 96
   Max Gaussian Number: 8.076 M
@@ -339,7 +513,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 23.986
 
-实验 33: clahe_15_grid_36
+实验 49: clahe_15_grid_36
   Clip Limit: 15
   Grid Size: 36
   Max Gaussian Number: 7.886 M
@@ -348,7 +522,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.818
   PSNR: 24.183
 
-实验 34: clahe_15_grid_48
+实验 50: clahe_15_grid_48
   Clip Limit: 15
   Grid Size: 48
   Max Gaussian Number: 7.895 M
@@ -357,7 +531,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.816
   PSNR: 24.132
 
-实验 35: clahe_15_grid_60
+实验 51: clahe_15_grid_60
   Clip Limit: 15
   Grid Size: 60
   Max Gaussian Number: 7.945 M
@@ -366,7 +540,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.815
   PSNR: 24.044
 
-实验 36: clahe_15_grid_72
+实验 52: clahe_15_grid_72
   Clip Limit: 15
   Grid Size: 72
   Max Gaussian Number: 7.989 M
@@ -375,7 +549,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.813
   PSNR: 24.008
 
-实验 37: clahe_15_grid_84
+实验 53: clahe_15_grid_84
   Clip Limit: 15
   Grid Size: 84
   Max Gaussian Number: 8.082 M
@@ -384,7 +558,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.811
   PSNR: 23.927
 
-实验 38: clahe_15_grid_96
+实验 54: clahe_15_grid_96
   Clip Limit: 15
   Grid Size: 96
   Max Gaussian Number: 8.056 M
@@ -393,7 +567,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.810
   PSNR: 23.964
 
-实验 39: clahe_20_grid_36
+实验 55: clahe_20_grid_36
   Clip Limit: 20
   Grid Size: 36
   Max Gaussian Number: 7.842 M
@@ -402,7 +576,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.818
   PSNR: 24.184
 
-实验 40: clahe_20_grid_48
+实验 56: clahe_20_grid_48
   Clip Limit: 20
   Grid Size: 48
   Max Gaussian Number: 7.891 M
@@ -411,7 +585,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.816
   PSNR: 24.106
 
-实验 41: clahe_20_grid_60
+实验 57: clahe_20_grid_60
   Clip Limit: 20
   Grid Size: 60
   Max Gaussian Number: 8.006 M
@@ -420,7 +594,7 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.815
   PSNR: 24.044
 
-实验 42: clahe_20_grid_72
+实验 58: clahe_20_grid_72
   Clip Limit: 20
   Grid Size: 72
   Max Gaussian Number: 7.917 M
@@ -429,11 +603,137 @@ clahe_20_grid_72          20           72           7.917 M         20785 MB    
   SSIM: 0.812
   PSNR: 23.989
 
+实验 59: clahe_20_grid_84
+  Clip Limit: 20
+  Grid Size: 84
+  Max Gaussian Number: 7.963 M
+  Max GPU mem: 21523 MB
+  Training time: 50.683 min
+  SSIM: 0.811
+  PSNR: 23.976
+
+实验 60: clahe_20_grid_96
+  Clip Limit: 20
+  Grid Size: 96
+  Max Gaussian Number: 8.114 M
+  Max GPU mem: 22801 MB
+  Training time: 52.667 min
+  SSIM: 0.811
+  PSNR: 24.016
+
+实验 61: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_150
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.715 M
+  Max GPU mem: 20825 MB
+  Training time: 49.967 min
+  SSIM: 0.820
+  PSNR: 24.284
+
+实验 62: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_50
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.928 M
+  Max GPU mem: 21301 MB
+  Training time: 52.450 min
+  SSIM: 0.819
+  PSNR: 24.165
+
+实验 63: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_100
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.794 M
+  Max GPU mem: 22745 MB
+  Training time: 52.000 min
+  SSIM: 0.819
+  PSNR: 24.192
+
+实验 64: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_20_texture_intensity_150
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.734 M
+  Max GPU mem: 20873 MB
+  Training time: 50.167 min
+  SSIM: 0.819
+  PSNR: 24.221
+
+实验 65: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_50
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.880 M
+  Max GPU mem: 20497 MB
+  Training time: 52.900 min
+  SSIM: 0.817
+  PSNR: 24.098
+
+实验 66: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_100
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.913 M
+  Max GPU mem: 20537 MB
+  Training time: 52.400 min
+  SSIM: 0.820
+  PSNR: 24.206
+
+实验 67: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_60_texture_intensity_150
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.751 M
+  Max GPU mem: 21429 MB
+  Training time: 52.167 min
+  SSIM: 0.820
+  PSNR: 24.298
+
+实验 68: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_50
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.852 M
+  Max GPU mem: 21889 MB
+  Training time: 51.600 min
+  SSIM: 0.818
+  PSNR: 24.130
+
+实验 69: clahe_40_grid_36_hp_80_unsharp_1.0_texture_scale_100_texture_intensity_100
+  Clip Limit: 40
+  Grid Size: 36
+  Max Gaussian Number: 7.816 M
+  Max GPU mem: 20905 MB
+  Training time: 52.867 min
+  SSIM: 0.820
+  PSNR: 24.235
+
+实验 70: clahe_40_grid_100_hp_5_unsharp_1.0
+  Clip Limit: 40
+  Grid Size: 100
+  Max Gaussian Number: 8.064 M
+  Max GPU mem: 21847 MB
+  Training time: 54.050 min
+  SSIM: 0.808
+  PSNR: 23.932
+
+实验 71: clahe_40_grid_200_hp_5_unsharp_1.0
+  Clip Limit: 40
+  Grid Size: 200
+  Max Gaussian Number: 8.280 M
+  Max GPU mem: 23009 MB
+  Training time: 53.783 min
+  SSIM: 0.794
+  PSNR: 23.763
+
+实验 72: clahe_40_grid_300_hp_5_unsharp_1.0
+  Clip Limit: 40
+  Grid Size: 300
+  Max Gaussian Number: 8.228 M
+  Max GPU mem: 21965 MB
+  Training time: 53.033 min
+  SSIM: 0.778
+  PSNR: 23.631
+
 ================================================================================
 统计信息:
 ================================================================================
-总实验数量: 42
-不同的Clip Limit值: ['1.5', '2.5', '3.5', '5', '10', '15', '20']
-不同的Grid Size值: ['4', '8', '12', '24', '36', '48', '60', '72', '84', '96']
-平均SSIM: 0.814
-平均PSNR: 24.111
+总实验数量: 72
+不同的Clip Limit值: ['1.5', '2.5', '3.5', '5', '10', '15', '20', '40']
+不同的Grid Size值: ['4', '8', '12', '24', '36', '48', '60', '72', '84', '96', '100', '200', '300']
+平均SSIM: 0.808
+平均PSNR: 23.994
