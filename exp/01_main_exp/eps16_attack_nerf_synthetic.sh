@@ -31,3 +31,5 @@ python victim/gaussian-splatting/benchmark.py --gpu 5\
     -s dataset/Nerf_Synthetic_eps16/mic/ -m log/01_main_exp/victim_gs_nerf_synthetic_eps16/mic/ 
 python victim/gaussian-splatting/benchmark.py --gpu 5\
     -s dataset/Nerf_Synthetic_eps16/ship/ -m log/01_main_exp/victim_gs_nerf_synthetic_eps16/ship/
+
+

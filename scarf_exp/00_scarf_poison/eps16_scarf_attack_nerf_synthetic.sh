@@ -1,9 +1,10 @@
+
 DATASET_PATH=dataset/Nerf_Synthetic
 DECOY_LOG_PATH=/root/nfs/gaobin/wwj_code/SCARF_Attack/log/01_main_exp/victim_gs_nerf_synthetic_clean
 
 scenes=(chair drums ficus hotdog lego materials mic ship)
 
-
+echo "scenes: ${scenes}"
 
 echo "dataset path: ${DATASET_PATH}_scarf_eps16"
 
@@ -36,8 +37,5 @@ wait
 
 # python victim/gaussian-splatting/benchmark.py --gpu 6\
 #     -s dataset/Nerf_Synthetic_scarf_eps16/scenes[2]/ -m log_scarf/00_scarf_poison/attacker_eps16_1_1_nerf_synthetic/scenes[2]/ 
-
-
-
 
 

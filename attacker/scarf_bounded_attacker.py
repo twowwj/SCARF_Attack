@@ -5,6 +5,9 @@
 # This software is free for non-commercial, research and evaluation use.
 #
 # For inquiries contact jiahao.lu@u.nus.edu
+# 
+# SCARF攻击代码：使用collapse损失来攻击3D高斯模型
+# 攻击目标：最大化collapse损失，破坏目标区域内的特征表示
 import sys
 import os
 # 添加项目根目录到Python路径
@@ -56,7 +59,11 @@ def compute_scene_bounds(gaussians, margin=0.1):
     return bbox_min, bbox_max
 
 
-def poison_splat_bounded(args):
+def attack_splat_bounded(args):
+    """
+    SCARF攻击函数：使用collapse损失攻击3D高斯模型
+    攻击目标：最大化collapse损失，破坏目标区域内的特征表示
+    """
     fix_all_random_seed()
     decoy_gaussians = GaussianModel(args.sh_degree)
     proxy_model_path = find_proxy_model(args)
@@ -106,43 +113,59 @@ def poison_splat_bounded(args):
         render_pkg = render(viewpoint_cam, decoy_gaussians, args, background)
         rendered_image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
         
-        # 使用collapse loss生成对抗性目标图像
+        # 攻击模式：生成对抗性目标图像来最大化collapse损失
         clean_gt_image = viewpoint_cam.original_image
         adv_gt_image_init = rendered_image.detach().clone()
         initial_noise = torch.zeros_like(adv_gt_image_init)
         adv_gt_image = torch.clamp(adv_gt_image_init + initial_noise, 0, 1).requires_grad_(True)
         
-        # 生成对抗性图像：基于重建损失优化
+        # 攻击模式：生成对抗性图像来最大化collapse损失
         for adv_image_search_iter in range(adv_image_search_iters):
-            # 计算重建损失
-            Ll1 = l1_loss(rendered_image, adv_gt_image)
-            Lssim = ssim(rendered_image, adv_gt_image)
-            recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
+            # 选择目标区域内的特征
+            target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max)
+            
+            # 计算collapse损失（攻击模式：最大化这个损失）
+            if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0:
+                collapse_loss = l_collapse(target_features, mu, args.lambda_collapse)
+                # 攻击模式：最大化collapse损失，同时保持一定的重建质量
+                Ll1 = l1_loss(rendered_image, adv_gt_image)
+                Lssim = ssim(rendered_image, adv_gt_image)
+                recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
+                
+                # 攻击目标：最大化collapse损失，最小化重建损失
+                attack_loss = collapse_loss - args.lambda_recon * recon_loss
+            else:
+                # 如果没有collapse损失，则最大化重建损失来破坏模型
+                Ll1 = l1_loss(rendered_image, adv_gt_image)
+                Lssim = ssim(rendered_image, adv_gt_image)
+                recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
+                attack_loss = recon_loss  # 最大化重建损失
             
             # 反向传播计算梯度
-            recon_loss.backward(inputs=[adv_gt_image])
+            attack_loss.backward(inputs=[adv_gt_image])
             perturbation = adv_alpha * adv_gt_image.grad.sign()
-            adv_image_unclipped = adv_gt_image.data - perturbation
+            adv_image_unclipped = adv_gt_image.data + perturbation
             clipped_perturbation = torch.clamp(adv_image_unclipped - clean_gt_image, -adv_epsilon, adv_epsilon)
             adv_gt_image = torch.clamp(clean_gt_image + clipped_perturbation, 0, 1).requires_grad_(True)
         
         viewpoint_cam.set_adv_image(adv_gt_image)
         
-        # Update the decoy gaussians by learning from collapse-optimized image
+        # 攻击模式：更新decoy gaussians以最大化collapse损失
         Ll1 = l1_loss(rendered_image, adv_gt_image)
         Lssim = ssim(rendered_image, adv_gt_image)
         recon_loss = (1.0 - args.lambda_dssim) * Ll1 + args.lambda_dssim * (1.0 - Lssim)
         
-        # 添加SCARF collapse损失
-        collapse_loss = None  # 初始化collapse_loss变量
+        # 攻击模式：组合损失函数
         if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0:
             # 选择目标区域内的特征
             target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max)
             # 计算collapse损失
             collapse_loss = l_collapse(target_features, mu, args.lambda_collapse)
-            # 组合损失函数：重建损失 + collapse损失
-            total_loss = args.lambda_recon * recon_loss + collapse_loss
+            # 攻击模式：最大化collapse损失，同时保持一定的重建质量
+            # 使用负号来最大化collapse损失
+            total_loss = collapse_loss - args.lambda_recon * recon_loss
         else:
+            # 如果没有collapse损失，则最大化重建损失
             total_loss = recon_loss
             
         total_loss.backward()
@@ -152,7 +175,7 @@ def poison_splat_bounded(args):
                 loss_info = f"recons loss {recon_loss.item():.3f}"
                 # 修复collapse loss打印的空值判断bug
                 if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0 and collapse_loss is not None:
-                    loss_info += f", collapse loss {collapse_loss.item():.3f}"
+                    loss_info += f", collapse attack loss {collapse_loss.item():.3f}"
                 print(f"[GPU-{args.gpu}] Attack iter {attack_iter}, {loss_info}, {decoy_gaussians.print_Gaussian_num()}")
             # Densification
             decoy_gaussians.max_radii2D[visibility_filter] = torch.max(decoy_gaussians.max_radii2D[visibility_filter], radii[visibility_filter])
@@ -236,7 +259,7 @@ def poison_splat_bounded(args):
         torchvision.utils.save_image(poisoned_image.cpu(), f'{poisoned_data_folder}/{image_name}.{args.image_format}')
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Poison-splat-bounded-attack')
+    parser = ArgumentParser(description='SCARF-Attack-splat-bounded')
     parser.add_argument('--adv_epsilon', type=int, default=16)
     parser.add_argument('--adv_iters', type=int, default=6000)
     parser.add_argument('--data_path', type=str, default='dataset/nerf_synthetic/chair')
@@ -255,9 +278,9 @@ if __name__ == '__main__':
     parser.add_argument('--auto_bbox', action='store_true', default=False, help='自动计算边界框覆盖整个场景')
     parser.add_argument('--bbox_margin', type=float, default=0.1, help='自动边界框的扩展边距（相对于场景大小的比例）')
     # 添加损失权重参数
-    parser.add_argument('--lambda_collapse', type=float, default=1.0, help='SCARF collapse损失权重')
-    parser.add_argument('--lambda_recon', type=float, default=1.0, help='重建损失权重')
-    parser.add_argument('--adv_image_search_iters', type=int, default=25, help='collapse loss的迭代次数')
+    parser.add_argument('--lambda_collapse', type=float, default=1.0, help='SCARF collapse攻击损失权重')
+    parser.add_argument('--lambda_recon', type=float, default=1.0, help='重建损失权重（用于平衡攻击强度）')
+    parser.add_argument('--adv_image_search_iters', type=int, default=25, help='攻击图像生成的迭代次数')
     args = set_default_arguments(parser)
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
     os.makedirs(args.data_output_path, exist_ok = True)
@@ -268,11 +291,12 @@ if __name__ == '__main__':
     
     # copy the camera config json files, and other necessary files
     args.output_path = args.decoy_log_path
-    poison_splat_bounded(args)
+    attack_splat_bounded(args)
 
-## go to root folder
-# python attacker/poison_splat_bounded.py --gpu 0 --adv_epsilon 16  --adv_image_search_iters 25 --adv_iters 600\
+## 运行SCARF攻击示例
+# python attacker/scarf_bounded_attacker.py --gpu 0 --adv_epsilon 16  --adv_image_search_iters 25 --adv_iters 600\
 #                     --data_path dataset/Nerf_Synthetic/chair/ \
 #                     --data_output_path dataset/Nerf_Synthetic_eps16/chair/ \
-#                     --decoy_log_path log/test/attacker-bounded/ns/chair/ \
-#                     --adv_proxy_model_path /mnt/data/jiahaolu/dev-poison-splat/rebuttal_exp_output/nerf_synthetic_clean/chair/victim_model.ply
+#                     --decoy_log_path log/test/scarf-attack/ns/chair/ \
+#                     --adv_proxy_model_path /mnt/data/jiahaolu/dev-poison-splat/rebuttal_exp_output/nerf_synthetic_clean/chair/victim_model.ply \
+#                     --lambda_collapse 1.0 --lambda_recon 0.1
