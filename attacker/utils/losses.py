@@ -4,10 +4,10 @@ from typing import Dict, Any
 
 def l_collapse(target_features: torch.Tensor, mu: torch.Tensor, lambda_val: float) -> torch.Tensor:
     """
-    计算特征坍塌损失
+    计算特征坍塌损失（仅对DC分量）
     Args:
         target_features: 目标特征 (M, D)，M是基元数量，D是特征维度
-        mu: 目标向量 (D,)，期望的特征均值
+        mu: 目标向量 (3,)，期望的DC分量均值
         lambda_val: 权重参数，控制均值损失的重要性
     Returns:
         loss: 坍塌损失值，标量tensor
@@ -19,13 +19,16 @@ def l_collapse(target_features: torch.Tensor, mu: torch.Tensor, lambda_val: floa
     # 确保mu在正确的设备上
     mu = mu.to(target_features.device)
     
-    # 1. 方差损失：让目标区域内的特征变得一致
-    # 计算每个特征维度的方差，然后求和
-    variance_loss = torch.var(target_features, dim=0).sum()
+    # 只取前3维作为DC分量
+    dc_features = target_features[:, :3]  # (M, 3)
     
-    # 2. 均值损失：让特征均值接近目标向量μ
-    mean_features = torch.mean(target_features, dim=0)
-    mean_loss = F.mse_loss(mean_features, mu)
+    # 1. 方差损失：让目标区域内的DC分量变得一致
+    # 计算每个DC分量维度的方差，然后求和
+    variance_loss = torch.var(dc_features, dim=0).sum()
+    
+    # 2. 均值损失：让DC分量均值接近目标向量μ
+    mean_dc_features = torch.mean(dc_features, dim=0)  # (3,)
+    mean_loss = F.mse_loss(mean_dc_features, mu)
     
     # 3. 总损失 = 方差损失 + λ×均值损失
     total_loss = variance_loss + lambda_val * mean_loss
@@ -34,10 +37,10 @@ def l_collapse(target_features: torch.Tensor, mu: torch.Tensor, lambda_val: floa
 
 def compute_collapse_metrics(target_features: torch.Tensor, mu: torch.Tensor) -> Dict[str, float]:
     """
-    计算特征坍塌的评估指标
+    计算特征坍塌的评估指标（仅对DC分量）
     Args:
         target_features: 目标特征 (M, D)
-        mu: 目标向量 (D,)
+        mu: 目标向量 (3,)
     Returns:
         metrics: 包含各种评估指标的字典
     """
@@ -52,15 +55,18 @@ def compute_collapse_metrics(target_features: torch.Tensor, mu: torch.Tensor) ->
     # 确保mu在正确的设备上
     mu = mu.to(target_features.device)
     
+    # 只取前3维作为DC分量
+    dc_features = target_features[:, :3]  # (M, 3)
+    
     # 计算方差
-    variance = torch.var(target_features, dim=0).mean().item()
+    variance = torch.var(dc_features, dim=0).mean().item()
     
     # 计算均值距离
-    mean_features = torch.mean(target_features, dim=0)
-    mean_distance = F.mse_loss(mean_features, mu).item()
+    mean_dc_features = torch.mean(dc_features, dim=0)
+    mean_distance = F.mse_loss(mean_dc_features, mu).item()
     
     # 计算坍塌比例（特征标准差相对于原始标准差的比值）
-    original_std = torch.std(target_features, dim=0).mean().item()
+    original_std = torch.std(dc_features, dim=0).mean().item()
     collapse_ratio = 1.0 - (original_std / (original_std + 1e-8))
     
     return {

@@ -255,11 +255,11 @@ def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Te
         visible_target_features = features[target_visible_mask]
         
         # 打印调试信息
-        print(f"[可见目标特征] 总高斯粒子: {xyz.shape[0]}")
-        print(f"[可见目标特征] 边界框内粒子: {bbox_mask.sum().item()}")
-        print(f"[可见目标特征] 可见粒子: {visibility_filter.sum().item()}")
-        print(f"[可见目标特征] 可见目标区域粒子: {visible_target_features.shape[0]}")
-        print(f"[可见目标特征] 目标区域: [{bbox_min.detach().cpu().numpy()}, {bbox_max.detach().cpu().numpy()}]")
+        # print(f"[可见目标特征] 总高斯粒子: {xyz.shape[0]}")
+        # print(f"[可见目标特征] 边界框内粒子: {bbox_mask.sum().item()}")
+        # print(f"[可见目标特征] 可见粒子: {visibility_filter.sum().item()}")
+        # print(f"[可见目标特征] 可见目标区域粒子: {visible_target_features.shape[0]}")
+        # print(f"[可见目标特征] 目标区域: [{bbox_min.detach().cpu().numpy()}, {bbox_max.detach().cpu().numpy()}]")
         
         return visible_target_features
         
