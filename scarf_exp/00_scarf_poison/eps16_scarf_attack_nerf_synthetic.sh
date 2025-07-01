@@ -4,7 +4,7 @@ DECOY_LOG_PATH=/root/nfs/gaobin/wwj_code/SCARF_Attack/log/01_main_exp/victim_gs_
 
 scenes=(chair drums ficus hotdog lego materials mic ship)
 
-echo "scenes: ${scenes}"
+
 
 echo "dataset path: ${DATASET_PATH}_scarf_eps16"
 

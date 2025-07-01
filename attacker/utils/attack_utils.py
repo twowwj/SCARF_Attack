@@ -172,15 +172,17 @@ def parse_mu_string(mu_str: str) -> torch.Tensor:
     except Exception as e:
         raise ValueError(f"Failed to parse mu string '{mu_str}': {e}")
 
-def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Tensor) -> torch.Tensor:
+def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Tensor, 
+                         visibility_filter: torch.Tensor) -> torch.Tensor:
     """
-    选择目标区域内的基元特征
+    选择当前视角下可见的目标区域内的基元特征
     Args:
         gaussians: GaussianModel对象，包含所有3D基元
         bbox_min: 边界框最小值 (3,)
         bbox_max: 边界框最大值 (3,)
+        visibility_filter: 可见性过滤器 (N,)，布尔张量，表示哪些高斯粒子在当前视角下可见
     Returns:
-        target_features: 目标区域基元特征 (M, D)，M是目标区域内基元数量
+        visible_target_features: 可见的目标区域基元特征 (M, D)，M是可见目标区域内基元数量
     """
     try:
         # 获取所有基元的XYZ坐标
@@ -201,10 +203,15 @@ def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Te
         if not isinstance(bbox_max, torch.Tensor):
             bbox_max = torch.tensor(bbox_max, dtype=torch.float32)
         
+        # 确保visibility_filter是tensor并且形状正确
+        if not isinstance(visibility_filter, torch.Tensor):
+            visibility_filter = torch.tensor(visibility_filter, dtype=torch.bool)
+        
         # 确保所有tensor都在同一设备上
         device = xyz.device
         bbox_min = bbox_min.to(device)
         bbox_max = bbox_max.to(device)
+        visibility_filter = visibility_filter.to(device)
         
         # 生成布尔掩码：选择在边界框内的基元
         # 检查每个维度的坐标是否在边界框范围内
@@ -213,7 +220,10 @@ def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Te
         mask_z = (xyz[:, 2] >= bbox_min[2]) & (xyz[:, 2] <= bbox_max[2])
         
         # 所有维度都在边界框内
-        mask = mask_x & mask_y & mask_z
+        bbox_mask = mask_x & mask_y & mask_z
+        
+        # 结合边界框掩码和可见性掩码
+        target_visible_mask = bbox_mask & visibility_filter
         
         # 获取特征张量
         if hasattr(gaussians, 'get_features'):
@@ -233,20 +243,25 @@ def select_target_features(gaussians, bbox_min: torch.Tensor, bbox_max: torch.Te
         # 处理3D特征张量：如果特征是3D的，需要将其展平为2D
         if features.dim() == 3:
             # 特征形状为 [N, 1, D]，需要转换为 [N, D]
-            features = features.squeeze(1)
+            if features.shape[1] == 1:
+                features = features.squeeze(1)
+            else:
+                features = features.reshape(features.shape[0], -1)
         
         # 确保特征张量在正确的设备上
         features = features.to(device)
         
-        # 返回目标区域内的特征
-        target_features = features[mask]
+        # 返回可见的目标区域内的特征
+        visible_target_features = features[target_visible_mask]
         
         # 打印调试信息
-        # print(f"Total gaussians: {xyz.shape[0]}")
-        # print(f"Gaussians in target region: {target_features.shape[0]}")
-        # print(f"Target region: [{bbox_min.detach().cpu().numpy()}, {bbox_max.detach().cpu().numpy()}]")
+        print(f"[可见目标特征] 总高斯粒子: {xyz.shape[0]}")
+        print(f"[可见目标特征] 边界框内粒子: {bbox_mask.sum().item()}")
+        print(f"[可见目标特征] 可见粒子: {visibility_filter.sum().item()}")
+        print(f"[可见目标特征] 可见目标区域粒子: {visible_target_features.shape[0]}")
+        print(f"[可见目标特征] 目标区域: [{bbox_min.detach().cpu().numpy()}, {bbox_max.detach().cpu().numpy()}]")
         
-        return target_features
+        return visible_target_features
         
     except Exception as e:
         print(f"Error in select_target_features: {e}")

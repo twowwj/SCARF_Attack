@@ -121,12 +121,14 @@ def attack_splat_bounded(args):
         
         # 攻击模式：生成对抗性图像来最大化collapse损失
         for adv_image_search_iter in range(adv_image_search_iters):
-            # 选择目标区域内的特征
-            target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max)
+            # 选择当前视角下可见的目标区域内的特征
+            visible_target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max, visibility_filter)
+            if not visible_target_features.requires_grad:
+                print("[警告] visible_target_features 不参与梯度传播！请检查 autograd 路径。")
             
             # 计算collapse损失（攻击模式：最大化这个损失）
             if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0:
-                collapse_loss = l_collapse(target_features, mu, args.lambda_collapse)
+                collapse_loss = l_collapse(visible_target_features, mu, args.lambda_collapse)
                 # 攻击模式：最大化collapse损失，同时保持一定的重建质量
                 Ll1 = l1_loss(rendered_image, adv_gt_image)
                 Lssim = ssim(rendered_image, adv_gt_image)
@@ -157,10 +159,12 @@ def attack_splat_bounded(args):
         
         # 攻击模式：组合损失函数
         if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0:
-            # 选择目标区域内的特征
-            target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max)
+            # 选择当前视角下可见的目标区域内的特征
+            visible_target_features = select_target_features(decoy_gaussians, bbox_min, bbox_max, visibility_filter)
+            if not visible_target_features.requires_grad:
+                print("[警告] visible_target_features 不参与梯度传播！请检查 autograd 路径。")
             # 计算collapse损失
-            collapse_loss = l_collapse(target_features, mu, args.lambda_collapse)
+            collapse_loss = l_collapse(visible_target_features, mu, args.lambda_collapse)
             # 攻击模式：最大化collapse损失，同时保持一定的重建质量
             # 使用负号来最大化collapse损失
             total_loss = collapse_loss - args.lambda_recon * recon_loss
@@ -174,7 +178,7 @@ def attack_splat_bounded(args):
             if attack_iter % 10 == 0:
                 loss_info = f"recons loss {recon_loss.item():.3f}"
                 # 修复collapse loss打印的空值判断bug
-                if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0 and collapse_loss is not None:
+                if hasattr(args, 'lambda_collapse') and args.lambda_collapse > 0 and 'collapse_loss' in locals() and collapse_loss is not None:
                     loss_info += f", collapse attack loss {collapse_loss.item():.3f}"
                 print(f"[GPU-{args.gpu}] Attack iter {attack_iter}, {loss_info}, {decoy_gaussians.print_Gaussian_num()}")
             # Densification
